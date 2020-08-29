@@ -8,7 +8,7 @@ from syft.execution.placeholder import PlaceHolder
 from syft.execution.role import Role
 from syft.execution.role_assignments import RoleAssignments
 
-from syft.generic.object import AbstractObject
+from syft.generic.abstract.sendable import AbstractSendable
 from syft.workers.abstract import AbstractWorker
 from syft.workers.virtual import VirtualWorker
 
@@ -60,7 +60,7 @@ class func2protocol(object):
         return protocol
 
 
-class Protocol(AbstractObject):
+class Protocol(AbstractSendable):
     """
     A Protocol stores a sequence of actions, just like a function.
 
@@ -69,6 +69,9 @@ class Protocol(AbstractObject):
     reference to it. This way, to compute remotely this sequence of actions on some remote
     input referenced through pointers, instead of sending multiple messages you need now to send a
     single message with the references of the protocol and the pointers.
+
+    Specifically, a Protocol can contain a mix of ComputationAction and CommunicationAction and
+    acts as a cross-worker. Use Plan for pure mathematical operations.
 
     All arguments are optional.
 
@@ -94,7 +97,7 @@ class Protocol(AbstractObject):
         tags: List[str] = None,
         description: str = None,
     ):
-        AbstractObject.__init__(self, id, owner, tags, description, child=None)
+        super().__init__(id, owner, tags, description, child=None)
 
         # Protocol instance info
         self.name = name or self.__class__.__name__

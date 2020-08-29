@@ -19,7 +19,7 @@ def test_websocket_worker_basic(hook, start_proc, secure, tmpdir):
     def create_self_signed_cert(cert_path, key_path):
         # create a key pair
         k = crypto.PKey()
-        k.generate_key(crypto.TYPE_RSA, 1024)
+        k.generate_key(crypto.TYPE_RSA, 2048)
 
         # create a self-signed cert
         cert = crypto.X509()
@@ -221,15 +221,15 @@ def test_websocket_worker_multiple_output_response(hook, start_remote_worker):
     server.terminate()
 
 
-def test_send_command_whitelist(hook, start_remote_worker):
+def test_send_command_allow_list(hook, start_remote_worker):
     server, remote_proxy = start_remote_worker(
         id="worker_call_api_good_methods", hook=hook, port=8772
     )
-    whitelisted_methods = {
+    allow_listed_methods = {
         "torch": {"tensor": [1, 2, 3], "rand": (2, 3), "randn": (2, 3), "zeros": (2, 3)}
     }
 
-    for framework, methods in whitelisted_methods.items():
+    for framework, methods in allow_listed_methods.items():
         attr = getattr(remote_proxy.remote, framework)
 
         for method, inp in methods.items():
@@ -242,7 +242,7 @@ def test_send_command_whitelist(hook, start_remote_worker):
     server.terminate()
 
 
-def test_send_command_not_whitelisted(hook, start_remote_worker):
+def test_send_command_not_allow_listed(hook, start_remote_worker):
     server, remote_proxy = start_remote_worker(
         id="worker_call_api_bad_method", hook=hook, port=8773
     )

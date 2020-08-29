@@ -6,7 +6,7 @@ from syft.generic.frameworks.hook import hook_args
 from syft.generic.frameworks.overload import overloaded
 from syft.generic.frameworks.types import FrameworkShapeType
 from syft.generic.frameworks.types import FrameworkTensor
-from syft.generic.tensor import AbstractTensor
+from syft.generic.abstract.tensor import AbstractTensor
 from syft.workers.abstract import AbstractWorker
 from syft.workers.base import BaseWorker
 
@@ -126,9 +126,7 @@ class MultiPointerTensor(AbstractTensor):
 
     def get(self, sum_results: bool = False) -> FrameworkTensor:
 
-        results = []
-        for v in self.child.values():
-            results.append(v.get())
+        results = [v.get() for v in self.child.values()]
 
         if sum_results:
             return sum(results)

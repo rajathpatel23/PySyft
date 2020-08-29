@@ -7,7 +7,7 @@ from syft.generic.frameworks.hook.hook_args import register_forward_func
 from syft.generic.frameworks.hook.hook_args import register_backward_func
 from syft.generic.frameworks.types import FrameworkShapeType
 from syft.generic.frameworks.types import FrameworkTensor
-from syft.generic.tensor import AbstractTensor
+from syft.generic.abstract.tensor import AbstractTensor
 from syft.generic.pointers.object_pointer import ObjectPointer
 from syft.messaging.message import TensorCommandMessage
 from syft.workers.abstract import AbstractWorker
@@ -15,6 +15,8 @@ from syft.workers.abstract import AbstractWorker
 from syft_proto.generic.pointers.v1.pointer_tensor_pb2 import PointerTensor as PointerTensorPB
 
 from syft.exceptions import RemoteObjectFoundError
+
+import torch
 
 
 class PointerTensor(ObjectPointer, AbstractTensor):
@@ -151,7 +153,7 @@ class PointerTensor(ObjectPointer, AbstractTensor):
             enough remote error handling yet to do anything better."""
             return True
 
-    def clone(self):
+    def clone(self, memory_format=torch.preserve_format):
         """
         Clone should keep ids unchanged, contrary to copy.
         We make the choice that a clone action is local, and can't affect
@@ -407,6 +409,9 @@ class PointerTensor(ObjectPointer, AbstractTensor):
     def __eq__(self, other):
         return self.eq(other)
 
+    def __iter__(self):
+        return (self[idx] for idx in range(self.shape[0]))
+
     @staticmethod
     def simplify(worker: AbstractWorker, ptr: "PointerTensor") -> tuple:
         """
@@ -420,20 +425,14 @@ class PointerTensor(ObjectPointer, AbstractTensor):
             data = simplify(ptr)
         """
 
-        if ptr.tags:
-            tags = tuple(ptr.tags)  # Need to be converted (set data structure isn't serializable)
-        else:
-            tags = None
-
         return (
-            # ptr.id,
             syft.serde.msgpack.serde._simplify(worker, ptr.id),
             syft.serde.msgpack.serde._simplify(worker, ptr.id_at_location),
             syft.serde.msgpack.serde._simplify(worker, ptr.location.id),
             syft.serde.msgpack.serde._simplify(worker, ptr.point_to_attr),
             syft.serde.msgpack.serde._simplify(worker, ptr._shape),
             ptr.garbage_collect_data,
-            tags,
+            syft.serde.msgpack.serde._simplify(worker, ptr.tags),
             ptr.description,
         )
 

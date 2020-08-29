@@ -44,6 +44,7 @@ samples[torch.Size] = make_torch_size
 # PySyft
 samples[syft.exceptions.GetNotPermittedError] = make_getnotpermittederror
 samples[syft.exceptions.ResponseSignatureError] = make_responsesignatureerror
+samples[syft.exceptions.EmptyCryptoPrimitiveStoreError] = make_emptycryptoprimitivestoreerror
 
 samples[syft.execution.communication.CommunicationAction] = make_communication_action
 samples[syft.execution.computation.ComputationAction] = make_computation_action
@@ -53,6 +54,7 @@ samples[syft.execution.plan.NestedTypeWrapper] = make_nested_type_wrapper
 samples[syft.execution.plan.Plan] = make_plan
 samples[syft.execution.protocol.Protocol] = make_protocol
 samples[syft.execution.role.Role] = make_role
+samples[syft.execution.role_assignments.RoleAssignments] = make_role_assignments
 samples[syft.execution.state.State] = make_state
 
 samples[syft.frameworks.torch.fl.dataset.BaseDataset] = make_basedataset
@@ -67,6 +69,8 @@ samples[
     syft.frameworks.torch.tensors.interpreters.precision.FixedPrecisionTensor
 ] = make_fixedprecisiontensor
 samples[syft.frameworks.torch.tensors.interpreters.private.PrivateTensor] = make_privatetensor
+
+samples[syft.frameworks.crypten.model.OnnxModel] = make_onnxmodel
 
 samples[syft.generic.pointers.multi_pointer.MultiPointerTensor] = make_multipointertensor
 samples[syft.generic.pointers.object_pointer.ObjectPointer] = make_objectpointer
@@ -85,13 +89,25 @@ samples[syft.messaging.message.PlanCommandMessage] = make_plancommandmessage
 samples[syft.messaging.message.SearchMessage] = make_searchmessage
 samples[syft.messaging.message.TensorCommandMessage] = make_tensor_command_message
 samples[syft.messaging.message.WorkerCommandMessage] = make_workercommandmessage
+samples[syft.messaging.message.CryptenInitPlan] = make_crypteninitplan
+samples[syft.messaging.message.CryptenInitJail] = make_crypteninitjail
 
 samples[syft.workers.virtual.VirtualWorker] = make_virtual_worker
+
+# To do add method for running pygrid node instance to cover this testing
+# samples[syft.grid.clients.data_centric_fl_client.DataCentricFLClient]=make_data_centric_fl_client
+
+# testing
+samples[SerializableDummyClass] = make_serializable_dummy_class
 
 
 def test_serde_coverage():
     """Checks all types in serde are tested"""
     for cls, _ in msgpack.serde.msgpack_global_state.simplifiers.items():
+        # currently involves running grid node instance might create overhead
+        # To do add method for running pygrid node instance to cover this testing
+        if cls == syft.grid.clients.data_centric_fl_client.DataCentricFLClient:
+            continue
         has_sample = cls in samples
         assert has_sample, f"Serde for {cls} is not tested"
 
